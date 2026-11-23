@@ -80,11 +80,16 @@ code {
   letter-spacing: -0.02em;
 }
 
-.brand-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   background: var(--aksen);
+  color: var(--aksen-teks);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
 }
 
 .brand-name {
