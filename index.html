@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenAudio — Studio Suara AI</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <span class="brand-name">OpenAudio</span>
+        <span class="brand-badge">ZeroGPU</span>
+      </div>
+
+      <div class="token-panel" role="group" aria-label="Token Hugging Face opsional">
+        <div class="token-field">
+          <span class="token-key" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+            </svg>
+          </span>
+          <input
+            id="hf_token"
+            type="password"
+            placeholder="Token Hugging Face opsional (hf_...)"
+            autocomplete="off"
+            aria-label="Token Hugging Face opsional"
+          >
+          <button id="btn_cek_token_top" type="button" class="btn-verify">Verifikasi</button>
+        </div>
+        <button id="btn_panduan_token" type="button" class="btn-secondary">Cara ambil token</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="studio">
+    <section class="hero">
+      <h1>OpenAudio</h1>
+      <p class="sub">Ubah teks menjadi suara alami, rancang karakter suara, atau tiru suara acuan.</p>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <div class="field">
+          <label for="teks">Teks</label>
+          <textarea id="teks" rows="6" maxlength="500" placeholder="Halo, selamat datang di OpenAudio."></textarea>
+          <div id="hitung" class="kecil">0 / 500 karakter</div>
+        </div>
+
+        <div class="field">
+          <label for="mode">Mode</label>
+          <select id="mode">
+            <option value="design">Rancang suara</option>
+            <option value="clone">Tiru suara</option>
+            <option value="plain">Suara bawaan</option>
+          </select>
+        </div>
+
+        <div id="grup_deskripsi" class="field">
+          <label for="deskripsi">Deskripsi suara</label>
+          <input id="deskripsi" type="text" placeholder="perempuan muda, lembut, ramah">
+        </div>
+
+        <div id="panel_clone" class="clone-box" hidden>
+          <div class="field">
+            <label for="rekaman_acuan">Rekaman acuan (3 sampai 30 detik)</label>
+            <input id="rekaman_acuan" type="file" accept="audio/*">
+          </div>
+
+          <div class="field">
+            <label for="transkrip_acuan">Transkrip rekaman (opsional, bikin tiruan lebih mirip)</label>
+            <input id="transkrip_acuan" type="text" placeholder="Teks yang diucapkan pada rekaman acuan">
+          </div>
+
+          <label class="checkbox-row">
+            <input id="izin_clone" type="checkbox">
+            <span>Saya pemilik suara ini atau sudah mendapat izin pemiliknya.</span>
+          </label>
+        </div>
+
+        <details class="advanced" id="panel_lanjutan">
+          <summary>Lanjutan</summary>
+          <div class="advanced-body">
+            <div class="field preset-field">
+              <label>Kualitas &amp; Kecepatan</label>
+              <div id="preset_group" class="preset-group" role="group" aria-label="Preset CFG dan Langkah">
+                <button type="button" class="preset-btn is-active" data-preset="default">Default</button>
+                <button type="button" class="preset-btn" data-preset="tinggi">Tinggi</button>
+                <button type="button" class="preset-btn" data-preset="cepat">Cepat</button>
+                <button type="button" class="preset-btn" data-preset="custom">Custom</button>
+              </div>
+            </div>
+
+            <div class="slider-field">
+              <div class="slider-head">
+                <label for="cfg">CFG</label>
+                <span id="cfg_val" class="mono">2.3</span>
+              </div>
+              <input id="cfg" type="range" min="1.0" max="4.0" step="0.1" value="2.3">
+            </div>
+
+            <div class="slider-field">
+              <div class="slider-head">
+                <label for="steps">Langkah (lebih kecil = lebih cepat)</label>
+                <span id="steps_val" class="mono">12</span>
+              </div>
+              <input id="steps" type="range" min="4" max="30" step="1" value="12">
+            </div>
+
+            <label class="checkbox-row">
+              <input id="normalize" type="checkbox" checked>
+              <span>Bersihkan teks Indonesia (angka, Rp, singkatan)</span>
+            </label>
+          </div>
+        </details>
+
+        <button id="tombol" type="button" class="btn-primary">Buat suara</button>
+        <p id="status" role="status"></p>
+      </section>
+
+      <section class="card output-card">
+        <h2>Hasil Audio</h2>
+        <p id="hasil_placeholder" class="kecil">Audio hasil sintesis akan muncul di sini setelah proses selesai.</p>
+
+        <div id="loading_box" class="loading-box" hidden aria-live="polite">
+          <span class="spinner" aria-hidden="true"></span>
+          <div class="loading-text">
+            <strong id="loading_judul">Memproses audio...</strong>
+            <span id="loading_sub" class="kecil">Mohon tunggu sebentar</span>
+          </div>
+        </div>
+
+        <audio id="pemutar" controls hidden></audio>
+      </section>
+    </div>
+  </main>
+
+  <div id="modal_token" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="modal_token_title">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="modal_token_title">Token Hugging Face</h2>
+        <button id="tutup_modal_token" type="button" class="btn-icon" aria-label="Tutup">✕</button>
+      </div>
+
+      <p id="modal_token_alasan" class="modal-desc">
+        Token bersifat opsional. Masukkan token Hugging Face (<code>hf_...</code>) untuk melanjutkan saat kuota gratis habis. Token disimpan di <code>sessionStorage</code> browser ini saja.
+      </p>
+
+      <div class="field">
+        <label for="modal_hf_token">Token Hugging Face</label>
+        <input id="modal_hf_token" type="password" placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+      </div>
+
+      <div class="modal-actions">
+        <button id="simpan_token_btn" type="button" class="btn-primary">Simpan &amp; Verifikasi Token</button>
+        <button id="batal_modal_token" type="button" class="btn-secondary">Nanti saja</button>
+      </div>
+
+      <div class="steps-box">
+        <h3>Cara mendapatkan token di Hugging Face (Step-by-Step)</h3>
+        <ol class="steps-list">
+          <li>
+            <strong>Buka menu profil di halaman awal:</strong> Klik menu/ikon profil di pojok kanan atas Hugging Face, lalu pilih <strong>Profile</strong> atau langsung masuk ke <strong>Settings</strong> / <strong>Access Tokens</strong>.
+            <figure class="step-figure">
+              <img src="./assets/hf-step-1-menu.jpg" alt="Langkah 1: Buka menu profil dan Settings di Hugging Face" loading="lazy">
+            </figure>
+          </li>
+          <li>
+            <strong>Masuk ke Access Tokens &amp; buat token:</strong> Di menu kiri pilih <strong>Access Tokens</strong>, lalu klik <strong>+ Create new token</strong> di kanan atas.
+            <figure class="step-figure">
+              <img src="./assets/hf-step-2-tokens.jpg" alt="Langkah 2: Menu Access Tokens dan tombol Create new token" loading="lazy">
+            </figure>
+          </li>
+          <li>
+            <strong>Beri nama, pilih izin, lalu salin token:</strong> Isi nama token (misalnya <code>openaudio-user</code>), pilih izin secukupnya (<em>Read</em>), lalu salin token yang diawali <code>hf_...</code>.
+          </li>
+          <li>
+            <strong>Tempel di web OpenAudio:</strong> Masukkan token ke kolom di atas atau di kolom token header, lalu klik <strong>Simpan &amp; Verifikasi Token</strong>.
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
